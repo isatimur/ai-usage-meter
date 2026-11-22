@@ -1,0 +1,31 @@
+name: Bug report
+description: Something shows a wrong number or does not work
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected.
+    validations:
+      required: true
+  - type: dropdown
+    id: tool
+    attributes:
+      label: Which tool
+      options: [Claude Code, Codex, OpenCode, OpenRouter, Plan limits, Terminal jump, Notifications, Other]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version and macOS version
+      placeholder: "0.1.0, macOS 15.1"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output of `aium summary --json` (optional)
+      description: Remove anything private first (project names, paths). Never paste tokens or log contents.
+      render: text

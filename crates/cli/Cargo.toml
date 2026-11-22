@@ -1,0 +1,20 @@
+[package]
+name = "aium-cli"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.89"
+description = "Command-line front end for aium-core."
+license = "MIT"
+publish = false
+
+[[bin]]
+name = "aium"
+path = "src/main.rs"
+
+[dependencies]
+aium-core = { path = "../core" }
+jiff = "0.2.43"
+serde_json = "1.0.154"
+
+[dev-dependencies]
+serde_json = "1.0.154"

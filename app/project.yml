@@ -1,0 +1,36 @@
+name: AIUsageMeter
+options:
+  deploymentTarget:
+    macOS: "14.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    ARCHS: "arm64 x86_64"
+    ONLY_ACTIVE_ARCH: NO
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    ENABLE_HARDENED_RUNTIME: NO
+targets:
+  AIUsageMeter:
+    type: application
+    platform: macOS
+    sources:
+      - Sources
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleName: AI Usage Meter
+        CFBundleDisplayName: AI Usage Meter
+        LSUIElement: true
+        LSMinimumSystemVersion: "14.0"
+        NSAppleEventsUsageDescription: "AI Usage Meter selects the Terminal tab that runs a session you click."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.aiusagemeter.AIUsageMeter
+        SWIFT_OBJC_BRIDGING_HEADER: Sources/Bridging-Header.h
+        HEADER_SEARCH_PATHS: $(SRCROOT)/../crates/core/include
+        LIBRARY_SEARCH_PATHS: $(SRCROOT)/../target/universal
+        CODE_SIGN_ENTITLEMENTS: AIUsageMeter.entitlements
+        OTHER_LDFLAGS: "-laium_core -lresolv"

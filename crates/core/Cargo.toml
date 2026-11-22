@@ -1,0 +1,20 @@
+[package]
+name = "aium-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.89"
+description = "Reads local Claude Code, Codex and OpenCode logs and reports usage, cost and plan limits."
+license = "MIT"
+publish = false
+
+[lib]
+name = "aium_core"
+crate-type = ["rlib", "staticlib"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+jiff = "0.2"
+zstd = "0.14.4"
+rusqlite = { version = "0.42.0", features = ["bundled"] }
+ureq = "3.5.2"
