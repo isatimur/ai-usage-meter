@@ -43,15 +43,28 @@ jobs:
           APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
           TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
           PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
-        run: xcrun notarytool store-credentials ci-notary --apple-id "$APPLE_ID" --team-id "$TEAM_ID" --password "$PASSWORD"
+        run: |
+          # Without Apple credentials the DMG is signed but not notarized, and the release says so.
+          if [ -n "$APPLE_ID" ] && [ -n "$PASSWORD" ]; then
+            xcrun notarytool store-credentials ci-notary --apple-id "$APPLE_ID" --team-id "$TEAM_ID" --password "$PASSWORD"
+            echo "AIUM_NOTARY_PROFILE=ci-notary" >> "$GITHUB_ENV"
+            echo "NOTARIZED=yes" >> "$GITHUB_ENV"
+          else
+            echo "No notary credentials: building a signed, not notarized DMG."
+            echo "NOTARIZED=no" >> "$GITHUB_ENV"
+          fi
       - name: Build, sign, notarize
         env:
           AIUM_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
-          AIUM_NOTARY_PROFILE: ci-notary
           AIUM_VERSION: ${{ github.ref_name }}
         run: scripts/package.sh
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-        run: gh release create "$TAG" dist/*.dmg dist/*.dmg.sha256 --title "$TAG" --generate-notes
+        run: |
+          NOTE=""
+          if [ "$NOTARIZED" != "yes" ]; then
+            NOTE="This build is signed but not notarized. On first open macOS may warn: right-click the app, choose Open, then confirm."
+          fi
+          gh release create "$TAG" dist/*.dmg dist/*.dmg.sha256 --title "$TAG" --generate-notes --notes "$NOTE"
