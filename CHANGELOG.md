@@ -4,6 +4,9 @@ All notable changes go here. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-23
+
+- The release build is now notarized by Apple and the ticket is stapled, so macOS opens it without a warning.
 ## [0.1.2] - 2026-11-23
 
 - Fixed: the popover no longer grows taller than the screen. The content scrolls and the footer stays in view.
