@@ -109,7 +109,7 @@ impl Cache {
         if let Err(e) = self.refresh_opencode(home, prices, &mut stats) {
             stats.errors.push(format!("opencode: {e}"));
         }
-        if let Err(e) = self.reprice_unknown(prices) {
+        if let Err(e) = self.reprice(prices) {
             stats.errors.push(format!("reprice: {e}"));
         }
         Ok(stats)
@@ -257,17 +257,44 @@ impl Cache {
         Ok(())
     }
 
-    /// Gives a price to stored events that had none when they were first read
-    /// (new model in the price table, or a user override added later).
-    /// Approximate Codex thread fallbacks stay unpriced on purpose.
-    fn reprice_unknown(&mut self, prices: &PriceTable) -> Result<()> {
+    /// Prices stored events again. Unpriced events always get another try (new
+    /// model in the table, or an override added later). When the price table
+    /// differs from the one used last time, events we priced ourselves
+    /// (`Computed`) are recalculated too. Costs the tool wrote itself (`Stored`)
+    /// are never touched. Approximate Codex thread fallbacks stay unpriced.
+    fn reprice(&mut self, prices: &PriceTable) -> Result<()> {
+        let fp = prices.fingerprint();
+        let last: Option<String> = self
+            .conn
+            .query_row("SELECT value FROM meta WHERE key = 'price_fp'", [], |r| {
+                r.get(0)
+            })
+            .optional()?;
+        let changed = last.as_deref() != Some(fp.as_str());
+        self.reprice_sources(prices, changed)?;
+        if changed {
+            self.conn.execute(
+                "INSERT INTO meta (key, value) VALUES ('price_fp', ?1) \
+                 ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                [&fp],
+            )?;
+        }
+        Ok(())
+    }
+
+    fn reprice_sources(&mut self, prices: &PriceTable, include_computed: bool) -> Result<()> {
+        let sources = if include_computed {
+            "('Unknown', 'Computed')"
+        } else {
+            "('Unknown')"
+        };
         let pending: Vec<(i64, UsageEvent)> = {
-            let mut stmt = self.conn.prepare(
+            let mut stmt = self.conn.prepare(&format!(
                 "SELECT rowid, tool, dedup_key, ts_ms, model, project, session, input, output, cache_read, \
                  cache_write_5m, cache_write_1h, reasoning FROM events \
-                 WHERE cost_source = 'Unknown' AND dedup_key NOT LIKE 'thread:%' \
-                 AND input + output + cache_read + cache_write_5m + cache_write_1h > 0",
-            )?;
+                 WHERE cost_source IN {sources} AND dedup_key NOT LIKE 'thread:%' \
+                 AND input + output + cache_read + cache_write_5m + cache_write_1h > 0"
+            ))?;
             let rows = stmt.query_map([], |r| {
                 let tool: String = r.get(1)?;
                 // A row from a tool this build does not know is skipped, never counted as Claude.

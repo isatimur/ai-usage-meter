@@ -56,6 +56,19 @@ impl PriceTable {
         Ok(self)
     }
 
+    /// A stable digest of every price. It changes when any price changes.
+    pub fn fingerprint(&self) -> String {
+        let mut names: Vec<&String> = self.models.keys().collect();
+        names.sort();
+        let mut h: u64 = 0xcbf29ce484222325; // FNV-1a
+        for name in names {
+            for b in format!("{name}={:?};", self.models[name]).bytes() {
+                h = (h ^ b as u64).wrapping_mul(0x100000001b3);
+            }
+        }
+        format!("{h:016x}")
+    }
+
     fn lookup(&self, model: &str) -> Option<&Prices> {
         self.models
             .get(model)
