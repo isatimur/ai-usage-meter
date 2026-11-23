@@ -135,7 +135,7 @@ impl Cache {
     pub fn local_date_at(&self, now_ms: i64) -> String {
         Timestamp::from_millisecond(now_ms)
             .expect("valid now")
-            .to_zoned(self.tz.clone())
+            .to_zoned_datetime(self.tz.clone())
             .date()
             .to_string()
     }
@@ -315,7 +315,7 @@ impl Cache {
             let mut stmt = tx.prepare(UPSERT)?;
             for e in events {
                 let day = Timestamp::from_millisecond(e.ts_ms)?
-                    .to_zoned(self.tz.clone())
+                    .to_zoned_datetime(self.tz.clone())
                     .date()
                     .to_string();
                 changed += stmt.execute(params![
