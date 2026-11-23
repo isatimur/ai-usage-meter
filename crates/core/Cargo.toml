@@ -1,6 +1,6 @@
 [package]
 name = "aium-core"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.89"
 description = "Reads local Claude Code, Codex and OpenCode logs and reports usage, cost and plan limits."
