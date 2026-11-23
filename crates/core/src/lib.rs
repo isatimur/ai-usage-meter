@@ -11,5 +11,6 @@ pub mod pricing;
 pub mod privacy;
 pub mod privacy_fix;
 pub mod report;
+pub mod status;
 
 pub use event::{CostSource, Tool, UsageEvent};

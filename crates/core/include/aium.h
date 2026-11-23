@@ -23,6 +23,10 @@ char *aium_sessions(const char *range, unsigned int limit);
 char *aium_daily_note(void);
 char *aium_budget(double spent, double budget);
 
+/* Public status of Claude and OpenAI from their status pages (no login).
+   Returns {"claude": {"level","description"}|{"error"}, "openai": ...}. */
+char *aium_status(void);
+
 /* Telemetry and feedback switches of the supported tools, read from local
    config and the environment. Returns {"findings": [...]}. */
 char *aium_privacy(void);
