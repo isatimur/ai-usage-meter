@@ -43,4 +43,10 @@ jobs:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - run: brew install xcodegen
-      - run: scripts/build-app.sh
+      - name: Build the app and pack the DMG (ad-hoc signed)
+        run: scripts/package.sh
+      - name: Check the DMG and the universal binary
+        run: |
+          hdiutil verify dist/AIUsageMeter-*.dmg
+          lipo -archs target/xcode/Build/Products/Release/AIUsageMeter.app/Contents/MacOS/AIUsageMeter | tee /dev/stderr | grep -q x86_64
+          lipo -archs target/xcode/Build/Products/Release/AIUsageMeter.app/Contents/MacOS/AIUsageMeter | grep -q arm64
