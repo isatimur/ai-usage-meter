@@ -19,7 +19,7 @@ jobs:
   dmg:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # No third-party action here: this job holds the signing certificate and Apple credentials.
       - run: rustup toolchain install stable --profile minimal --target aarch64-apple-darwin,x86_64-apple-darwin
       - run: brew install xcodegen
