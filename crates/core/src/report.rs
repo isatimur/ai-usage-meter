@@ -94,7 +94,11 @@ pub fn daily_note(
         let _ = writeln!(out, "|---|---|---|---|---|");
         for s in sessions {
             let last = Timestamp::from_millisecond(s.last_ts_ms)
-                .map(|ts| ts.to_zoned(tz.clone()).strftime("%H:%M").to_string())
+                .map(|ts| {
+                    ts.to_zoned_datetime(tz.clone())
+                        .strftime("%H:%M")
+                        .to_string()
+                })
                 .unwrap_or_default();
             let _ = writeln!(
                 out,

@@ -119,7 +119,9 @@ fn run_disable(home: &std::path::Path, yes: bool) -> Result<(), Box<dyn std::err
         println!("Dry run: nothing was written. Run again with --yes to apply. Each file gets a backup first.");
         return Ok(());
     }
-    let stamp = jiff::Zoned::now().strftime("%Y%m%d-%H%M%S").to_string();
+    let stamp = jiff::ZonedDateTime::now()
+        .strftime("%Y%m%d-%H%M%S")
+        .to_string();
     let backups = aium_core::privacy_fix::apply(&changes, &stamp)?;
     for b in &backups {
         println!("Backup: {}", b.display());

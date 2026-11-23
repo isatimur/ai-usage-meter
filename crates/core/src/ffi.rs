@@ -199,7 +199,7 @@ pub extern "C" fn aium_daily_note() -> *mut c_char {
 #[no_mangle]
 pub extern "C" fn aium_budget(spent: f64, budget: f64) -> *mut c_char {
     run(|| {
-        let now = jiff::Zoned::now();
+        let now = jiff::ZonedDateTime::now();
         let f =
             crate::budget::forecast(spent, budget, now.day() as u32, now.days_in_month() as u32);
         Ok(json!({ "forecast": f }).to_string())
@@ -228,7 +228,9 @@ pub extern "C" fn aium_privacy_disable(apply: i32) -> *mut c_char {
         let home = std::path::Path::new(&home);
         let changes = crate::privacy_fix::plan(home).map_err(|p| p.join("\n"))?;
         let backups = if apply != 0 && !changes.is_empty() {
-            let stamp = jiff::Zoned::now().strftime("%Y%m%d-%H%M%S").to_string();
+            let stamp = jiff::ZonedDateTime::now()
+                .strftime("%Y%m%d-%H%M%S")
+                .to_string();
             crate::privacy_fix::apply(&changes, &stamp)?
         } else {
             Vec::new()

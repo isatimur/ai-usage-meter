@@ -88,7 +88,7 @@ fn add(acc: &mut Acc, r: &Row) {
 fn range_days(tz: &TimeZone, range: Range, now_ms: i64) -> (jiff::civil::Date, jiff::civil::Date) {
     let today = Timestamp::from_millisecond(now_ms)
         .expect("valid now")
-        .to_zoned(tz.clone())
+        .to_zoned_datetime(tz.clone())
         .date();
     let first = match range {
         Range::Today => today,
