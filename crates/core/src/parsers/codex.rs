@@ -102,8 +102,15 @@ pub fn parse_codex_file(path: &Path, from_offset: u64) -> std::io::Result<ParseO
         .iter()
         .any(|(_, v)| v.get("type").and_then(Value::as_str) == Some("token_usage_record"));
 
+    // A rollout whose session_meta has no id still needs a session of its own,
+    // or two files with the same token total would share a dedup key.
     let mut ctx = Ctx {
-        session: String::new(),
+        session: path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map(|n| n.trim_end_matches(".zst").trim_end_matches(".jsonl"))
+            .unwrap_or_default()
+            .to_string(),
         project: String::new(),
         model: String::new(),
     };

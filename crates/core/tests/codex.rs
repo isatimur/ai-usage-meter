@@ -112,3 +112,20 @@ fn fallback_only_for_missing_rollouts() {
     assert_eq!(ev[0].project, "/b");
     std::fs::remove_dir_all(&dir).ok();
 }
+
+#[test]
+fn rollouts_without_a_session_id_do_not_share_dedup_keys() {
+    // No session_meta id: the key must still differ per file, or a second
+    // session with the same token total is dropped as a duplicate.
+    let line = r#"{"timestamp":"2026-11-10T09:00:05.000Z","type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":1000,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":100,"reasoning_output_tokens":0,"total_tokens":1100},"last_token_usage":{"input_tokens":1000,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":100,"reasoning_output_tokens":0,"total_tokens":1100}}}}"#;
+    let dir = tmp("noid");
+    let (a, b) = (dir.join("rollout-a.jsonl"), dir.join("rollout-b.jsonl"));
+    std::fs::write(&a, format!("{line}\n")).unwrap();
+    std::fs::write(&b, format!("{line}\n")).unwrap();
+    let ea = parse_codex_file(&a, 0).unwrap().events;
+    let eb = parse_codex_file(&b, 0).unwrap().events;
+    assert_eq!((ea.len(), eb.len()), (1, 1));
+    assert_ne!(ea[0].dedup_key, eb[0].dedup_key);
+    assert_ne!(ea[0].session, eb[0].session);
+    std::fs::remove_dir_all(&dir).ok();
+}
