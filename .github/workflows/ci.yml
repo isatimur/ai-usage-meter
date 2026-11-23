@@ -45,6 +45,11 @@ jobs:
       - run: brew install xcodegen
       - name: Build the app and pack the DMG (ad-hoc signed)
         run: scripts/package.sh
+      - name: Swift unit tests
+        run: |
+          cd app
+          xcodebuild -project AIUsageMeter.xcodeproj -scheme AIUsageMeter -derivedDataPath ../target/xcode \
+            -destination "platform=macOS" CODE_SIGN_IDENTITY="-" test
       - name: Check the DMG and the universal binary
         run: |
           hdiutil verify dist/AIUsageMeter-*.dmg
