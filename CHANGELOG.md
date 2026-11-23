@@ -4,6 +4,10 @@ All notable changes go here. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+- Fixed: a changed price (a `prices.json` override or a new bundled table) now reprices past events. Before, only events with no price were updated.
+
+## [0.1.0]
+
 First public release. It includes:
 
 - Usage and cost for Claude Code, Codex and OpenCode, with optional OpenRouter key usage.
