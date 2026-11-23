@@ -34,3 +34,26 @@ targets:
         LIBRARY_SEARCH_PATHS: $(SRCROOT)/../target/universal
         CODE_SIGN_ENTITLEMENTS: AIUsageMeter.entitlements
         OTHER_LDFLAGS: "-laium_core -lresolv"
+  AIUsageMeterTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests
+    dependencies:
+      - target: AIUsageMeter
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.aiusagemeter.AIUsageMeterTests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/AIUsageMeter.app/Contents/MacOS/AIUsageMeter
+        BUNDLE_LOADER: $(TEST_HOST)
+        HEADER_SEARCH_PATHS: $(SRCROOT)/../crates/core/include
+        LIBRARY_SEARCH_PATHS: $(SRCROOT)/../target/universal
+schemes:
+  AIUsageMeter:
+    build:
+      targets:
+        AIUsageMeter: all
+    test:
+      targets:
+        - AIUsageMeterTests
