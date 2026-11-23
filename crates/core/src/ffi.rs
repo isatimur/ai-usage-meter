@@ -228,7 +228,9 @@ pub extern "C" fn aium_privacy_disable(apply: i32) -> *mut c_char {
         let home = std::path::Path::new(&home);
         let changes = crate::privacy_fix::plan(home).map_err(|p| p.join("\n"))?;
         let backups = if apply != 0 && !changes.is_empty() {
-            let stamp = jiff::ZonedDateTime::now().strftime("%Y%m%d-%H%M%S").to_string();
+            let stamp = jiff::ZonedDateTime::now()
+                .strftime("%Y%m%d-%H%M%S")
+                .to_string();
             crate::privacy_fix::apply(&changes, &stamp)?
         } else {
             Vec::new()
