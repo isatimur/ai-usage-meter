@@ -36,5 +36,6 @@ else
   echo "Not notarized: set AIUM_SIGN_IDENTITY and AIUM_NOTARY_PROFILE for a release build."
 fi
 
-shasum -a 256 "$DMG" | tee "$DMG.sha256"
+# Run from dist/ so the file holds a bare name and `shasum -c` works where the DMG is downloaded.
+(cd dist && shasum -a 256 "$(basename "$DMG")" | tee "$(basename "$DMG").sha256")
 echo "Packed: $DMG"
