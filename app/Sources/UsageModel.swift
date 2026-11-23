@@ -69,6 +69,29 @@ final class UsageModel: ObservableObject {
         }
     }
 
+    @Published var status: StatusBundle?
+    private var lastStatusFetch: Date?
+    private var isFetchingStatus = false
+
+    /// Public status pages: no login, polled at most this often, and only if the user turned it on.
+    func refreshStatusIfDue(force: Bool = false) {
+        guard UserDefaults.standard.object(forKey: "showStatus") as? Bool ?? false else {
+            status = nil
+            return
+        }
+        guard !isFetchingStatus, !CommandLine.arguments.contains("--snapshot") else { return }
+        if !force, let last = lastStatusFetch, Date().timeIntervalSince(last) < Self.limitsEvery { return }
+        isFetchingStatus = true
+        lastStatusFetch = Date()
+        Task.detached {
+            let bundle = try? CoreBridge.status()
+            await MainActor.run {
+                if let bundle { self.status = bundle }
+                self.isFetchingStatus = false
+            }
+        }
+    }
+
     private var timer: Timer?
 
     /// Writes today's note to the Obsidian folder, one file per day.
@@ -166,6 +189,7 @@ final class UsageModel: ObservableObject {
                     self.updateBudget()
                     self.autoExportIfDue()
                     self.refreshLimitsIfDue()
+                    self.refreshStatusIfDue()
                 case .failure(let error):
                     self.lastError = error.localizedDescription
                 }

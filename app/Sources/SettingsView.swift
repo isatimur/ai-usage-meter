@@ -33,6 +33,7 @@ struct SettingsView: View {
     @AppStorage("refreshSeconds") private var refreshSeconds = 120
     @AppStorage("showLimits") private var showLimits = false
     @AppStorage("notifyLimits") private var notifyLimits = false
+    @AppStorage("showStatus") private var showStatus = false
     @AppStorage("monthlyBudget") private var monthlyBudget = 0.0
     @AppStorage("obsidianFolder") private var obsidianFolder = ""
     @AppStorage("obsidianAuto") private var obsidianAuto = false
@@ -65,6 +66,12 @@ struct SettingsView: View {
                 Toggle("Send notifications (limits at 75% and 90%, fast usage, budget)", isOn: $notifyLimits)
                     .onChange(of: notifyLimits) { _, on in if on { Notifier.requestAccess() } }
                 Text("The app reads your Claude Code login (Keychain, macOS asks once) and your Codex login (~/.codex/auth.json). Every 5 minutes it asks the Anthropic and OpenAI servers for your limits. It does not store tokens anywhere. These requests are unofficial and may stop working.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section("Provider status") {
+                Toggle("Show Claude and OpenAI incidents", isOn: $showStatus)
+                    .onChange(of: showStatus) { _, _ in model.refreshStatusIfDue(force: true) }
+                Text("Every 5 minutes the app reads status.claude.com and status.openai.com. These are public pages: no login, no token, nothing about you is sent. A line shows in the popover only during an incident.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section("Budget") {

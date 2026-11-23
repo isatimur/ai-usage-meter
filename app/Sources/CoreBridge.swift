@@ -108,6 +108,20 @@ struct BudgetResult: Decodable {
     let forecast: BudgetForecast?
 }
 
+/// One provider's public status page, or an error from fetching it.
+struct ProviderStatus: Decodable {
+    let level: String?          // "operational", "minor", "major" or "critical"
+    let description: String?
+    let error: String?
+    /// True only when the page said so. An unreachable page is not an incident.
+    var hasIncident: Bool { level != nil && level != "operational" }
+}
+
+struct StatusBundle: Decodable {
+    let claude: ProviderStatus?
+    let openai: ProviderStatus?
+}
+
 struct PrivacyFinding: Decodable, Identifiable {
     let tool: String
     let setting: String
@@ -196,6 +210,10 @@ enum CoreBridge {
     static func budget(spent: Double, budget: Double) throws -> BudgetForecast? {
         let r: BudgetResult = try decode(try call { aium_budget(spent, budget) })
         return r.forecast
+    }
+
+    static func status() throws -> StatusBundle {
+        try decode(try call { aium_status() })
     }
 
     static func privacy() throws -> [PrivacyFinding] {

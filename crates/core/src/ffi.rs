@@ -206,6 +206,27 @@ pub extern "C" fn aium_budget(spent: f64, budget: f64) -> *mut c_char {
     })
 }
 
+/// Public status of Claude and OpenAI (no login, no token). Returns
+/// `{"claude": {"level","description"}|{"error"}, "openai": ...}`.
+#[no_mangle]
+pub extern "C" fn aium_status() -> *mut c_char {
+    run(|| {
+        let one = |base: &str| match crate::status::fetch_with(base) {
+            Ok(s) => serde_json::to_value(s).unwrap_or(serde_json::Value::Null),
+            Err(e) => json!({ "error": e.to_string() }),
+        };
+        let (c, o) = std::thread::scope(|s| {
+            let c = s.spawn(|| one(crate::status::CLAUDE_STATUS));
+            let o = s.spawn(|| one(crate::status::OPENAI_STATUS));
+            (c.join(), o.join())
+        });
+        let pick = |r: std::thread::Result<serde_json::Value>| {
+            r.unwrap_or_else(|_| json!({ "error": "status check failed" }))
+        };
+        Ok(json!({ "claude": pick(c), "openai": pick(o) }).to_string())
+    })
+}
+
 /// Telemetry and feedback switches of the supported tools, from local config
 /// and the environment only. Returns {"findings": [...]}.
 #[no_mangle]

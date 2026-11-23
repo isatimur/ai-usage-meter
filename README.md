@@ -13,6 +13,18 @@ A macOS menu-bar app that shows what your AI coding tools cost and how much of y
 - **Obsidian:** one Markdown note per day, written to a folder you choose.
 - **Privacy check:** Settings and `aium privacy` show which telemetry, sharing and feedback switches are on for Claude Code, Codex, OpenCode and Gemini CLI, and how to turn each off.
 
+- **Provider status (opt-in):** a line in the popover when Claude or OpenAI report an incident, read from their public status pages.
+
+## How it differs
+
+[CodexBar](https://github.com/steipete/CodexBar) covers far more providers, and has widgets and a Linux app. If you need Cursor, Copilot or 100 other services, use it. This project makes a narrower promise:
+
+- **Local logs first.** Usage and cost come from the logs your tools already write. It does not read browser cookies, does not need Full Disk Access, and does not inspect your process list.
+- **Network is opt-in and named.** Plan limits (your own login token) and provider status (public pages) each have their own switch, off by default. The table below lists every source.
+- **It checks the tools, too.** `aium privacy` shows which telemetry, error-report and feedback switches Claude Code, Codex, OpenCode and Gemini CLI have on, and can turn them off with a diff and a backup. [docs/what-tools-send.md](docs/what-tools-send.md) records what two of them sent in one run.
+- **A status line.** `aium summary --oneline` is built for a shell prompt or the Claude Code `statusLine`.
+- **A small core.** Rust library with a C ABI, tested on Linux too. A new tool is one `FileSource` parser.
+
 <img src="docs/screenshot.png" alt="The popover with demo data" width="380">
 
 The screenshot uses made-up demo data (`--demo`).
@@ -81,6 +93,7 @@ The app lands in `target/xcode/Build/Products/Release/AIUsageMeter.app`. Local b
 | Keychain item "Claude Code-credentials" | Claude plan limits (opt-in) |
 | `~/.codex/auth.json` | Codex plan limits (opt-in) |
 | OpenRouter API key (stored in your Keychain) | OpenRouter key usage (optional) |
+| `status.claude.com`, `status.openai.com` (public, no login) | Incident line (opt-in) |
 
 Tokens are used for one request each and are never stored or logged.
 

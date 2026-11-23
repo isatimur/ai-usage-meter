@@ -13,6 +13,7 @@ First public release. It includes:
 - Monthly budget with a month-end projection.
 - Click a session to jump to its terminal.
 - Daily Obsidian notes.
+- Provider status (opt-in): an incident line for Claude and OpenAI, from their public status pages.
 - `aium` command-line tool, with `--json` and a one-line `--oneline` output for status lines.
 - Privacy section in Settings, and `aium privacy`: show which telemetry, error-report and feedback switches are set for Claude Code, Codex, OpenCode and Gemini CLI, and how to turn them off.
 - `aium privacy --disable` and a Settings button: turn off those switches with a diff, a backup and a confirm step.

@@ -18,6 +18,7 @@ struct PopoverView: View {
             if let s = summary {
                 header(s)
                 budgetLine
+                statusSection
                 limitsSection
                 if let n = model.keychainNote {
                     Text(n).font(.caption).foregroundStyle(.orange)
@@ -136,6 +137,20 @@ struct PopoverView: View {
             Text(text).font(.callout)
                 .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(b.status == "ok" ? Color.secondary : Color.red)
+        }
+    }
+
+    /// One line per provider that reports an incident. Silent when all is well.
+    @ViewBuilder private var statusSection: some View {
+        let items: [(String, ProviderStatus?)] = [("Claude", model.status?.claude), ("OpenAI", model.status?.openai)]
+        ForEach(items.filter { $0.1?.hasIncident == true }, id: \.0) { name, s in
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(s?.level == "minor" ? Color.orange : Color.red)
+                Text("\(name): \(s?.description ?? "incident")")
+                    .font(.caption)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 
