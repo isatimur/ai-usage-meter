@@ -4,6 +4,9 @@ All notable changes go here. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-23
+
+- Fixed: the `.sha256` file now works with `shasum -c` (it held a `dist/` path before).
 - Fixed: Claude plan limits disappeared when Claude Code left two items in the Keychain and macOS returned the one with no login. The app now tries every item, newest first.
 - Added Swift unit tests (Keychain item choice, JSON contract with the Rust core), run in CI.
 - Fixed: a changed price (a `prices.json` override or a new bundled table) now reprices past events. Before, only events with no price were updated.
