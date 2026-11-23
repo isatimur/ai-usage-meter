@@ -1,13 +1,52 @@
 import SwiftUI
 
+/// How tall the scrolling part of the popover may be.
+enum PopoverLayout {
+    /// Menu bar, window margins, and the pinned footer.
+    static let reserved: CGFloat = 140
+    static let minimum: CGFloat = 240
+
+    /// `content` is the measured height of the content, 0 until it is measured.
+    static func scrollHeight(content: CGFloat, screen: CGFloat) -> CGFloat {
+        let cap = max(minimum, screen - reserved)
+        return content > 0 ? min(content, cap) : cap
+    }
+}
+
+private struct ContentHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
+}
+
 struct PopoverView: View {
     @ObservedObject var model: UsageModel
+    @State private var contentHeight: CGFloat = 0
     @State private var showAllSessions = false
     @State private var focusStatus: String?
 
     private var summary: Summary? { model.summaries[model.selected] }
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ScrollView {
+                content
+                    .background(GeometryReader { g in
+                        Color.clear.preference(key: ContentHeightKey.self, value: g.size.height)
+                    })
+            }
+            .onPreferenceChange(ContentHeightKey.self) { contentHeight = $0 }
+            .frame(height: PopoverLayout.scrollHeight(
+                content: contentHeight, screen: NSScreen.main?.visibleFrame.height ?? 800))
+
+            Divider()
+            footer
+        }
+        .padding(14)
+        .frame(width: 380)
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             Picker("Range", selection: $model.selected) {
                 ForEach(UsageRange.allCases) { Text($0.title).tag($0) }
@@ -54,13 +93,7 @@ struct PopoverView: View {
                     Text(s).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
             }
-
-            Divider()
-            footer
         }
-        .padding(14)
-        .frame(width: 380)
-        .background(Color(nsColor: .windowBackgroundColor))
     }
 
     private func header(_ s: Summary) -> some View {

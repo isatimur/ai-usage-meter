@@ -50,6 +50,12 @@ jobs:
           cd app
           xcodebuild -project AIUsageMeter.xcodeproj -scheme AIUsageMeter -derivedDataPath ../target/xcode \
             -destination "platform=macOS" CODE_SIGN_IDENTITY="-" test
+      - name: Swift unit tests (Intel slice, under Rosetta)
+        run: |
+          softwareupdate --install-rosetta --agree-to-license >/dev/null 2>&1 || true
+          cd app
+          xcodebuild -project AIUsageMeter.xcodeproj -scheme AIUsageMeter -derivedDataPath ../target/xcode \
+            -destination "platform=macOS,arch=x86_64" CODE_SIGN_IDENTITY="-" test
       - name: Check the DMG and the universal binary
         run: |
           hdiutil verify dist/AIUsageMeter-*.dmg

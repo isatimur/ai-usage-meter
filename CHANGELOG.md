@@ -4,6 +4,8 @@ All notable changes go here. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+- Fixed: the popover no longer grows taller than the screen. The content scrolls and the footer stays in view.
+- CI now also runs the Swift tests as x86_64, so the Intel part of the universal app is exercised.
 ## [0.1.1] - 2026-11-23
 
 - Fixed: the `.sha256` file now works with `shasum -c` (it held a `dist/` path before).
