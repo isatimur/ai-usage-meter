@@ -4,6 +4,10 @@ All notable changes go here. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-24
+
+- Added an app icon: a gauge over usage bars.
+
 ## [0.1.4] - 2026-11-24
 
 - The release build is now notarized by Apple and the ticket is stapled, so macOS opens it without a warning.
