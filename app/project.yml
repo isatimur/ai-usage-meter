@@ -12,6 +12,8 @@ settings:
     CODE_SIGN_STYLE: Manual
     CODE_SIGN_IDENTITY: "-"
     ENABLE_HARDENED_RUNTIME: NO
+    MARKETING_VERSION: "0.0.0"
+    CURRENT_PROJECT_VERSION: "0"
 targets:
   AIUsageMeter:
     type: application
@@ -23,6 +25,8 @@ targets:
       properties:
         CFBundleName: AI Usage Meter
         CFBundleDisplayName: AI Usage Meter
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSUIElement: true
         LSMinimumSystemVersion: "14.0"
         NSAppleEventsUsageDescription: "AI Usage Meter selects the Terminal tab that runs a session you click."

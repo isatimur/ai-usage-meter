@@ -22,17 +22,23 @@ lipo -create \
   target/x86_64-apple-darwin/release/libaium_core.a \
   -output target/universal/libaium_core.a
 
+VERSION="${AIUM_VERSION:-$(awk -F'"' '/^version/ {print $2; exit}' crates/core/Cargo.toml)}"
+VERSION="${VERSION#v}"
+
 cd app
 xcodegen generate
 if [ -n "$AIUM_SIGN_IDENTITY" ]; then
   xcodebuild -project AIUsageMeter.xcodeproj -scheme AIUsageMeter -configuration Release \
     -derivedDataPath ../target/xcode -destination "generic/platform=macOS" CODE_SIGN_IDENTITY="$AIUM_SIGN_IDENTITY" \
     ENABLE_HARDENED_RUNTIME=YES OTHER_CODE_SIGN_FLAGS="--timestamp" \
+    MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$VERSION" \
     CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO build
 else
   xcodebuild -project AIUsageMeter.xcodeproj -scheme AIUsageMeter -configuration Release \
     -derivedDataPath ../target/xcode -destination "generic/platform=macOS" CODE_SIGN_IDENTITY="-" \
+    MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$VERSION" \
     CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO build
 fi
 ../scripts/check-entitlements.sh ../target/xcode/Build/Products/Release/AIUsageMeter.app
+../scripts/check-version.sh ../target/xcode/Build/Products/Release/AIUsageMeter.app "$VERSION"
 echo "Built: target/xcode/Build/Products/Release/AIUsageMeter.app"

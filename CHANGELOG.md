@@ -4,6 +4,10 @@ All notable changes go here. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-11-24
+
+- Fixed: the app reported version 1.0 whatever the release. It now reports the release version, and the build fails if the two differ.
+
 ## [0.1.5] - 2026-11-24
 
 - Added an app icon: a gauge over usage bars.
