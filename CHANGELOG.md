@@ -4,9 +4,15 @@ All notable changes go here. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
-## [0.1.3] - 2026-11-23
+## [0.1.4] - 2026-11-24
 
 - The release build is now notarized by Apple and the ticket is stapled, so macOS opens it without a warning.
+- Fixed: earlier builds were signed with a debug entitlement (`get-task-allow`). Apple refuses to notarize that. The build now drops it and fails if it comes back.
+
+## [0.1.3] - 2026-11-23
+
+- Not released. Apple rejected the build because of the debug entitlement. Use 0.1.4.
+
 ## [0.1.2] - 2026-11-23
 
 - Fixed: the popover no longer grows taller than the screen. The content scrolls and the footer stays in view.

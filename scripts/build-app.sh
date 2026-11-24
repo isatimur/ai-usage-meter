@@ -27,9 +27,12 @@ xcodegen generate
 if [ -n "$AIUM_SIGN_IDENTITY" ]; then
   xcodebuild -project AIUsageMeter.xcodeproj -scheme AIUsageMeter -configuration Release \
     -derivedDataPath ../target/xcode -destination "generic/platform=macOS" CODE_SIGN_IDENTITY="$AIUM_SIGN_IDENTITY" \
-    ENABLE_HARDENED_RUNTIME=YES OTHER_CODE_SIGN_FLAGS="--timestamp" build
+    ENABLE_HARDENED_RUNTIME=YES OTHER_CODE_SIGN_FLAGS="--timestamp" \
+    CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO build
 else
   xcodebuild -project AIUsageMeter.xcodeproj -scheme AIUsageMeter -configuration Release \
-    -derivedDataPath ../target/xcode -destination "generic/platform=macOS" CODE_SIGN_IDENTITY="-" build
+    -derivedDataPath ../target/xcode -destination "generic/platform=macOS" CODE_SIGN_IDENTITY="-" \
+    CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO build
 fi
+../scripts/check-entitlements.sh ../target/xcode/Build/Products/Release/AIUsageMeter.app
 echo "Built: target/xcode/Build/Products/Release/AIUsageMeter.app"
