@@ -1,5 +1,9 @@
 # AI Usage Meter
 
+[![CI](https://github.com/isatimur/ai-usage-meter/actions/workflows/ci.yml/badge.svg)](https://github.com/isatimur/ai-usage-meter/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/isatimur/ai-usage-meter)](https://github.com/isatimur/ai-usage-meter/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A macOS menu-bar app that shows what your AI coding tools cost and how much of your plan limits you have used.
 
 - **Tools:** Claude Code, Codex, OpenCode. OpenRouter key usage is optional.
@@ -39,11 +43,13 @@ Everything is computed on your Mac from local logs. The cost is an estimate: tok
 
 ## Install
 
-Releases are published as a DMG on the GitHub Releases page (universal: Apple Silicon and Intel, macOS 14 or newer). With Homebrew, once a tap is set up from `packaging/homebrew/ai-usage-meter.rb`:
+With Homebrew:
 
 ```sh
-brew install --cask <owner>/tap/ai-usage-meter
+brew install --cask isatimur/tap/ai-usage-meter
 ```
+
+Or download the DMG from the [latest release](https://github.com/isatimur/ai-usage-meter/releases/latest). It is universal (Apple Silicon and Intel), needs macOS 14 or newer, and is signed with a Developer ID and notarized by Apple, so macOS opens it without a warning. Each release lists the SHA-256 of the DMG.
 
 The command-line tool: `cargo install --path crates/cli` (binary `aium`).
 
