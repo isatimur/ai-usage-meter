@@ -14,7 +14,7 @@ enum Credentials {
 
     /// Every Keychain read can raise a macOS prompt, so each one leaves a line here.
     /// No token and no account name is ever logged. Read it with:
-    /// log show --last 1h --predicate 'subsystem == "app.aiusagemeter.AIUsageMeter"'
+    /// /usr/bin/log show --last 1h --predicate 'subsystem == "app.aiusagemeter.AIUsageMeter"'
     private static let trace = Logger(subsystem: "app.aiusagemeter.AIUsageMeter", category: "keychain")
 
     private static let lock = NSLock()
