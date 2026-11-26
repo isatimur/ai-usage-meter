@@ -56,8 +56,8 @@ final class UsageModel: ObservableObject {
             let codex = Credentials.codexAuth()
             let bundle = try? CoreBridge.limits(
                 claudeToken: claude, codexToken: codex?.token, codexAccount: codex?.account)
-            // The saved token expired: forget it, so the next poll reads the new one.
-            if bundle?.claude?.error?.contains("login expired") == true { Credentials.forgetClaudeToken() }
+            // The saved token expired: read the Keychain again only after a wait, not every poll.
+            if bundle?.claude?.error?.contains("login expired") == true { Credentials.markClaudeTokenExpired() }
             await MainActor.run {
                 self.keychainNote = note
                 if let bundle {

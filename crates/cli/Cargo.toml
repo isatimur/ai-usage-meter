@@ -1,6 +1,6 @@
 [package]
 name = "aium-cli"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 rust-version = "1.89"
 description = "Command-line front end for aium-core."
