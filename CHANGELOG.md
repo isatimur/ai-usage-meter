@@ -4,6 +4,12 @@ All notable changes go here. Format: [Keep a Changelog](https://keepachangelog.c
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-11-26
+
+- Fixed: macOS asked for Keychain access again and again. When the Claude login had expired, the app read the Keychain on every 5-minute poll and found the same expired token each time. It now waits 30 minutes before it reads again, and keeps showing "login expired" in between.
+- Fixed: the app now remembers which Keychain item held the login and reads only that one, so one prompt, not one per item.
+- Added a trace of every Keychain read to the macOS log (no token, no account name). Read it with `log show --last 1h --predicate 'subsystem == "app.aiusagemeter.AIUsageMeter"'`.
+
 ## [0.1.6] - 2026-11-24
 
 - Fixed: the app reported version 1.0 whatever the release. It now reports the release version, and the build fails if the two differ.

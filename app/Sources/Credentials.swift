@@ -1,4 +1,5 @@
 import Foundation
+import os
 import Security
 
 /// Reads the logins that Claude Code and Codex already keep on this Mac.
@@ -11,10 +12,47 @@ enum Credentials {
         case missing
     }
 
+    /// Every Keychain read can raise a macOS prompt, so each one leaves a line here.
+    /// No token and no account name is ever logged. Read it with:
+    /// log show --last 1h --predicate 'subsystem == "app.aiusagemeter.AIUsageMeter"'
+    private static let trace = Logger(subsystem: "app.aiusagemeter.AIUsageMeter", category: "keychain")
+
     private static let lock = NSLock()
-    private static var cachedClaude: String?        // in memory only, gone when the app quits
+    private static var cache = TokenCache()         // in memory only, gone when the app quits
     private static var deniedUntil: Date?
     private static let backoff: TimeInterval = 60 * 60
+    /// The account that held the login last time. The name is not a secret. Reading only
+    /// this item means one macOS prompt, not one per item.
+    private static let accountKey = "claudeKeychainAccount"
+
+    /// The Claude token, held in memory. When the API says it expired, we keep serving it for
+    /// a while instead of reading the Keychain again: Claude Code refreshes the item only
+    /// while it runs, so an early re-read finds the same expired token and shows a prompt for nothing.
+    struct TokenCache {
+        private(set) var token: String?
+        private var expiredAt: Date?
+        static let holdOff: TimeInterval = 30 * 60
+
+        /// The token to use now, or nil when the Keychain must be read.
+        func usable(now: Date) -> String? {
+            guard let token else { return nil }
+            if let expiredAt, now >= expiredAt.addingTimeInterval(Self.holdOff) { return nil }
+            return token
+        }
+
+        mutating func store(_ new: String, now: Date) {
+            if new == token, expiredAt != nil {
+                expiredAt = now           // same expired token again: wait again
+            } else {
+                token = new
+                expiredAt = nil
+            }
+        }
+
+        mutating func markExpired(now: Date) {
+            if token != nil, expiredAt == nil { expiredAt = now }
+        }
+    }
 
     /// Claude Code keeps its login in the Keychain. macOS asks for the login password.
     /// The token stays in memory, so macOS is asked once per launch, not on every poll.
@@ -22,8 +60,14 @@ enum Credentials {
     static func claudeAccess() -> ClaudeAccess {
         lock.lock()
         defer { lock.unlock() }
-        if let t = cachedClaude { return .token(t) }
-        if let until = deniedUntil, until > Date() { return .denied }
+        if let t = cache.usable(now: Date()) {
+            trace.debug("claude token served from memory, no keychain read")
+            return .token(t)
+        }
+        if let until = deniedUntil, until > Date() {
+            trace.info("keychain read skipped: access was denied, waiting")
+            return .denied
+        }
 
         // Listing attributes never asks for a password.
         let list: [String: Any] = [
@@ -44,7 +88,10 @@ enum Credentials {
             return KeychainItem(account: account, modified: r[kSecAttrModificationDate as String] as? Date ?? .distantPast)
         }
         var denied = false
-        let token = pickClaudeToken(items) { item in
+        let preferred = UserDefaults.standard.string(forKey: accountKey)
+        trace.info("keychain read starts: \(items.count) matching items, preferred account known: \(preferred != nil)")
+        let found = pickClaudeLogin(items, preferred: preferred) { item in
+            trace.info("keychain item read (may show a macOS prompt)")
             let q: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: service,
@@ -59,9 +106,10 @@ enum Credentials {
             if status != errSecItemNotFound { denied = true }
             return nil
         }
-        if let token {
-            cachedClaude = token
-            return .token(token)
+        if let found {
+            cache.store(found.token, now: Date())
+            UserDefaults.standard.set(found.account, forKey: accountKey)
+            return .token(found.token)
         }
         if denied {
             // Do not ask again right away.
@@ -96,16 +144,27 @@ enum Credentials {
     /// Claude Code can leave more than one item under the same service name. Try the newest
     /// first and use the first one that holds a Claude login.
     static func pickClaudeToken(_ items: [KeychainItem], read: (KeychainItem) -> Data?) -> String? {
-        for item in newestFirst(items) {
-            if let data = read(item), let token = claudeToken(in: data) { return token }
+        pickClaudeLogin(items, preferred: nil, read: read)?.token
+    }
+
+    /// Same, but reads the item of the `preferred` account first, and returns which account held the login.
+    static func pickClaudeLogin(_ items: [KeychainItem], preferred: String?,
+                                read: (KeychainItem) -> Data?) -> (token: String, account: String)? {
+        var ordered = newestFirst(items)
+        if let preferred, let i = ordered.firstIndex(where: { $0.account == preferred }) {
+            ordered.insert(ordered.remove(at: i), at: 0)
+        }
+        for item in ordered {
+            if let data = read(item), let token = claudeToken(in: data) { return (token, item.account) }
         }
         return nil
     }
 
-    /// Drops the cached token (it expired) so the next call reads the Keychain again.
-    static func forgetClaudeToken() {
+    /// The API said the token expired. Keep it for a while and read the Keychain again later.
+    static func markClaudeTokenExpired() {
+        trace.info("claude token expired: next keychain read is allowed after the wait")
         lock.lock()
-        cachedClaude = nil
+        cache.markExpired(now: Date())
         lock.unlock()
     }
 
